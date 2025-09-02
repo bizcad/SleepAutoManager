@@ -12,4 +12,8 @@
     <Content Include="bin\Debug\net9.0\Assets\App.ico" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Assets\" />
+  </ItemGroup>
+
 </Project>
