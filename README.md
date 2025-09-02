@@ -78,5 +78,5 @@ This program was written for my Windows 11 machine. Your milage may vary. It use
 
 Use at your own risk. Changing device wake permissions can affect your ability to wake the PC from sleep.
 ## Attribution
-I added the free version of a snooze.png icon by Pixel perfect (https://www.flaticon.com/authors/pixel-perfect) (<a href="https://www.flaticon.com/free-icon/snooze_3602333?term=snooze&page=1&position=5&origin=tag&related_id=3602333" title="snooze icons">Snooze icons created by Pixel perfect - Flaticon</a>) 
+I added the free version of a !snooze.png icon by Pixel perfect (https://www.flaticon.com/authors/pixel-perfect) <a href="https://github.com/bizcad/SleepAutoManager/blob/master/Assets/snooze.png" title="snooze icons">Snooze icons created by Pixel perfect - Flaticon</a>
 I did not buy him a coffee because this program is for non-commercial uses.
