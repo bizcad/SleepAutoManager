@@ -5,6 +5,11 @@
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>SleepAutoManager</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>bin\Debug\net9.0\Assets\App.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="bin\Debug\net9.0\Assets\App.ico" />
+  </ItemGroup>
 
 </Project>

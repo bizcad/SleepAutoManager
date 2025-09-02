@@ -26,31 +26,59 @@ class Program
 
         if (core.AnyWakeEnabled())
         {
-            Console.WriteLine("The following devices will have wake permissions disabled:");
+            Console.WriteLine();
+            Console.WriteLine("The following devices can have wake permissions enabled or disabled:");
+            int sel = 1;
+            Dictionary<int, string> dic = [];
             foreach (var device in devices)
             {
-                Console.WriteLine($" - {device}");
+                dic.Add(sel, device);
+                Console.WriteLine($"{sel++}. - {device}");
             }
-            Console.Write("Proceed? Press 'Y' to continue, any other key to cancel: ");
-            var key = Console.ReadKey(intercept: true);
-            Console.WriteLine();
 
-            if (key.KeyChar == 'y' || key.KeyChar == 'Y')
+            Console.WriteLine("\nEnable? Press 'E' to ENABLE all,");
+            Console.WriteLine("Press 'D' to DISABLE all,");
+            Console.WriteLine("or enter a number from the list to leave that device enabled (disable the rest).");
+            Console.WriteLine("Press Enter with no input to abort.");
+            Console.Write("Selection: ");
+
+            var input = Console.ReadLine()?.Trim();
+
+            if (string.IsNullOrEmpty(input))
             {
-                Console.WriteLine("Disabling wake permissions for devices...");
-                core.DisableWakeForAllAndSleep();
+                Console.WriteLine("Aborting...");
+                Thread.Sleep(1000);
             }
             else
             {
-                Console.WriteLine("Aborting...");
-                Thread.Sleep(2000);
+                switch (input.ToUpperInvariant())
+                {
+                    case "E":
+                        Console.WriteLine("Enabling wake permissions for devices...");
+                        core.EnableWakeForAll();
+                        Thread.Sleep(1000);
+                        break;
+
+                    case "D":
+                        Console.WriteLine("Disabling wake permissions for devices...");
+                        core.DisableWakeAndSleep();
+                        break;
+
+                    default:
+                        if (int.TryParse(input, out int index) && dic.ContainsKey(index))
+                        {
+                            Console.WriteLine($"Disabling wake permissions for devices except #{index}. {dic[index]}");
+                            core.DisableWakeAndSleep(dic, index);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Invalid selection '{input}'. Aborting...");
+                            Thread.Sleep(1000);
+                        }
+                        break;
+                }
             }
-        }
-        else
-        {
-            Console.WriteLine("Re-enabling wake permissions for devices...");
-            core.EnableWakeForAll();
-            Console.WriteLine("Wake permissions re-enabled. Exiting.");
+
         }
     }
 }
@@ -114,7 +142,7 @@ public sealed class SleepAutoCore
         if (string.IsNullOrWhiteSpace(capableOut))
         {
             Console.WriteLine("wake_programmable devices found.");
-            return new List<string>();
+            return  [];
         }
 
         var devices = ParseDeviceList(capableOut);
@@ -132,25 +160,48 @@ public sealed class SleepAutoCore
 
     public bool AnyWakeEnabled()
     {
+        Console.WriteLine("Currently wake-enabled devices:");
         var armed = GetWakeArmedDevices();
+        foreach (var device in armed)
+        {
+            Console.WriteLine($" - {device}");
+        }
         // Exact line match, case-insensitive
         return _devices.Any(d => armed.Contains(d));
     }
 
-    public void DisableWakeForAllAndSleep()
+    public void DisableWakeAndSleep()
     {
         foreach (var device in _devices)
         {
-            if (device.IndexOf("Microsoft Ergonomic", StringComparison.OrdinalIgnoreCase) >= 0)
-             {
-                Console.WriteLine($"Skipping mouse/keyboard device: {device}");
+            if (device.Contains("Microsoft Ergonomic", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"The following device is a Microsoft Ergonomic device and will remain armed to awaken the machine:\n {device}");
                 continue;
             }
-            //_runner.Run($@"powercfg -devicedisablewake ""{device}""");
+            _runner.Run($@"powercfg -devicedisablewake ""{device}""");
         }
         Console.WriteLine("Putting the machine to sleep...");
         _runner.Run(SleepCommand);
+        Environment.Exit(0);
     }
+    public void DisableWakeAndSleep(Dictionary<int, string> choices, int key)
+    {
+        string selectedDevice = choices[key];
+        foreach (var device in _devices)
+        {
+            if (string.Equals(device, selectedDevice, StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"The following device will remain armed to awaken the machine:\n {device}");
+                continue;
+            }
+            _runner.Run($@"powercfg -devicedisablewake ""{device}""");
+        }
+        Console.WriteLine("Putting the machine to sleep...");
+        _runner.Run(SleepCommand);
+        Environment.Exit(0);
+    }
+
 
     public void EnableWakeForAll()
     {
