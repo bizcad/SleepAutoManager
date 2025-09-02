@@ -65,9 +65,9 @@ class Program
                         break;
 
                     default:
-                        if (int.TryParse(input, out int index) && dic.ContainsKey(index))
+                        if (int.TryParse(input, out int index) && dic.TryGetValue(index, out string value))
                         {
-                            Console.WriteLine($"Disabling wake permissions for devices except #{index}. {dic[index]}");
+                            Console.WriteLine($"Disabling wake permissions for devices except #{index}. {value}");
                             core.DisableWakeAndSleep(dic, index);
                         }
                         else
@@ -128,6 +128,7 @@ public sealed class SleepAutoCore
 
     private readonly IReadOnlyList<string> _devices;
     private readonly IProcessRunner _runner;
+    private static readonly char[] separator = ['\r', '\n'];
 
     public SleepAutoCore(IEnumerable<string> devices, IProcessRunner runner)
     {
@@ -235,7 +236,7 @@ public sealed class SleepAutoCore
     private static List<string> ParseDeviceList(string output)
     {
         return [.. output
-            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+            .Split(separator, StringSplitOptions.RemoveEmptyEntries)
             .Select(line => line.Trim())
             .Where(line => line.Length > 0)
             .Distinct(StringComparer.OrdinalIgnoreCase)];
