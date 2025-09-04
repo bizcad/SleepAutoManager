@@ -42,6 +42,7 @@ class Program
             Console.WriteLine("Press Enter with no input to abort.");
             Console.Write("Selection: ");
 
+            
             var input = Console.ReadLine()?.Trim();
 
             if (string.IsNullOrEmpty(input))
@@ -79,6 +80,12 @@ class Program
                 }
             }
 
+        }
+        else
+        {
+            Console.WriteLine("Enabling wake permissions for devices...");
+            core.EnableWakeForAll();
+            Thread.Sleep(1000);
         }
     }
 }
