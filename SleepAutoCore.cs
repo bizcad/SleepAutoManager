@@ -7,20 +7,23 @@ namespace SleepAutoManager;
 public sealed class SleepAutoCore
 {
     public const string SleepCommand = "rundll32.exe powrprof.dll,SetSuspendState 0,1,0";
+    private readonly IEnumerable<string> _devices = [];
+    private readonly RealProcessRunner _runner = new();
 
-    private readonly IReadOnlyList<string> _devices;
-    private readonly IProcessRunner _runner;
+    //private readonly IReadOnlyList<string> _devices;
+    //IProcessRunner _runner;
     private static readonly char[] separator = ['\r', '\n'];
 
-    public SleepAutoCore(IEnumerable<string> devices, IProcessRunner runner)
-    {
-        _devices = devices?.ToList() ?? throw new ArgumentNullException(nameof(devices));
-        _runner = runner ?? throw new ArgumentNullException(nameof(runner));
+
+    public SleepAutoCore()
+    {        
+        
     }
 
-    public static List<string> GetWakeProgrammableDevices(IProcessRunner runner)
+    public static List<string> GetWakeProgrammableDevices()
     {
         // Primary: all devices capable of waking
+        var runner = new RealProcessRunner();
         var (_, capableOut) = runner.RunWithOutput("powercfg -devicequery wake_programmable");
         if (string.IsNullOrWhiteSpace(capableOut))
         {
@@ -49,7 +52,7 @@ public sealed class SleepAutoCore
             Console.WriteLine($" - {device}");
         }
         // Exact line match, case-insensitive
-        return _devices.Any(d => armed.Contains(d));
+        return armed.Count > 1;
     }
 
     public void DisableWakeAndSleep()
